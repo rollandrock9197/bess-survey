@@ -1076,7 +1076,8 @@ const state = {
   profile: null,      // 0.20, 0.30, 0.40
   simultaneity: 0.65,
   estimatedFromEquipment: false,
-  detectedTariff: null
+  detectedTariff: null,
+  leadId: null
 };
 
 // ============================================
@@ -1502,6 +1503,20 @@ function calculateAndShowResults() {
 
   // Animate hero number
   animateNumber('heroAmount', 0, Math.round(annualSavings), 1200);
+
+  // Update lead in Supabase with survey results
+  updateLeadWithResults({
+    tarif: state.tariff,
+    puissance: state.puissance,
+    option_utilisation: state.usageOption,
+    profil_consommation: state.profile,
+    economies_annuelles: Math.round(annualSavings),
+    puissance_batterie: battPower,
+    capacite_batterie: battCapacity,
+    cout_batterie: battCost,
+    retour_investissement: parseFloat(payback.toFixed(1)),
+    survey_completed: true
+  });
 }
 
 // ============================================
@@ -1586,6 +1601,7 @@ function restart() {
   state.simultaneity = 0.65;
   state.estimatedFromEquipment = false;
   state.detectedTariff = null;
+  state.leadId = null;
 
   // Reset UI
   document.querySelectorAll('.card').forEach(c => {
@@ -1654,16 +1670,20 @@ async function sendLeadNotification() {
   // 1. Envoi vers Supabase
   if (SUPABASE_URL && SUPABASE_ANON_KEY) {
     try {
-      await fetch(SUPABASE_URL + '/rest/v1/leads', {
+      const resp = await fetch(SUPABASE_URL + '/rest/v1/leads', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': SUPABASE_ANON_KEY,
           'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-          'Prefer': 'return=minimal'
+          'Prefer': 'return=representation'
         },
         body: JSON.stringify(data)
       });
+      if (resp.ok) {
+        const rows = await resp.json();
+        if (rows.length > 0) state.leadId = rows[0].id;
+      }
     } catch (e) {
       console.warn('Supabase insert failed:', e);
     }
@@ -1681,6 +1701,27 @@ async function sendLeadNotification() {
     } catch (e) {
       console.warn('Google Sheet insert failed:', e);
     }
+  }
+}
+
+// ============================================
+// 1b. UPDATE LEAD with survey results (Step 5)
+// ============================================
+async function updateLeadWithResults(resultsData) {
+  if (!state.leadId || !SUPABASE_URL || !SUPABASE_ANON_KEY) return;
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/leads?id=eq.' + state.leadId, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(resultsData)
+    });
+  } catch (e) {
+    console.warn('Supabase update failed:', e);
   }
 }
 
