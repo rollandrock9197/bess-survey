@@ -1514,8 +1514,7 @@ function calculateAndShowResults() {
     puissance_batterie: battPower,
     capacite_batterie: battCapacity,
     cout_batterie: battCost,
-    retour_investissement: parseFloat(payback.toFixed(1)),
-    survey_completed: true
+    retour_investissement: parseFloat(payback.toFixed(1))
   });
 }
 
@@ -1667,22 +1666,26 @@ async function sendLeadNotification() {
     entreprise: state.lead.entreprise
   };
 
-  // 1. Envoi vers Supabase
+  // 1. Envoi vers Supabase (via RPC SECURITY DEFINER)
   if (SUPABASE_URL && SUPABASE_ANON_KEY) {
     try {
-      const resp = await fetch(SUPABASE_URL + '/rest/v1/leads', {
+      const resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/insert_lead', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': SUPABASE_ANON_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-          'Prefer': 'return=representation'
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+          p_nom: data.nom,
+          p_email: data.email,
+          p_telephone: data.telephone,
+          p_entreprise: data.entreprise
+        })
       });
       if (resp.ok) {
-        const rows = await resp.json();
-        if (rows.length > 0) state.leadId = rows[0].id;
+        const leadId = await resp.json();
+        if (leadId) state.leadId = leadId;
       }
     } catch (e) {
       console.warn('Supabase insert failed:', e);
@@ -1710,15 +1713,25 @@ async function sendLeadNotification() {
 async function updateLeadWithResults(resultsData) {
   if (!state.leadId || !SUPABASE_URL || !SUPABASE_ANON_KEY) return;
   try {
-    await fetch(SUPABASE_URL + '/rest/v1/leads?id=eq.' + state.leadId, {
-      method: 'PATCH',
+    await fetch(SUPABASE_URL + '/rest/v1/rpc/update_lead_results', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Prefer': 'return=minimal'
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
       },
-      body: JSON.stringify(resultsData)
+      body: JSON.stringify({
+        p_lead_id: state.leadId,
+        p_tarif: resultsData.tarif,
+        p_puissance: resultsData.puissance,
+        p_option_utilisation: resultsData.option_utilisation,
+        p_profil_consommation: resultsData.profil_consommation,
+        p_economies_annuelles: resultsData.economies_annuelles,
+        p_puissance_batterie: resultsData.puissance_batterie,
+        p_capacite_batterie: resultsData.capacite_batterie,
+        p_cout_batterie: resultsData.cout_batterie,
+        p_retour_investissement: resultsData.retour_investissement
+      })
     });
   } catch (e) {
     console.warn('Supabase update failed:', e);
