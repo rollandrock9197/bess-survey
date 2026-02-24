@@ -1617,6 +1617,13 @@ function restart() {
 }
 
 // ============================================
+// SUPABASE + GOOGLE SHEET CONFIGURATION
+// ============================================
+const SUPABASE_URL = 'https://tskhcpvpyvctjwolvryf.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_UN269p-JKJZW6a9eRshOoA_fvSIO2VG';
+const GOOGLE_SHEET_WEBHOOK = ''; // TODO: mettre l'URL du webhook Google Apps Script
+
+// ============================================
 // EMAIL CONFIGURATION
 // ============================================
 const CONTACT_EMAIL = 'nicolas.rolland@auchin.fr';
@@ -1634,29 +1641,47 @@ const CONTACT_EMAIL = 'nicolas.rolland@auchin.fr';
 const EMAIL_SERVICE = null; // Set to 'emailjs', 'api', etc. when ready
 
 // ============================================
-// 1. NOTIFICATION LEAD -> nicolas.rolland@auchin.fr (Step 0)
+// 1. NOTIFICATION LEAD -> Supabase + Google Sheet (Step 0)
 // ============================================
-function sendLeadNotification() {
+async function sendLeadNotification() {
   const data = {
     nom: state.lead.nom,
     email: state.lead.email,
-    tel: state.lead.tel,
-    entreprise: state.lead.entreprise,
-    timestamp: new Date().toISOString()
+    telephone: state.lead.tel,
+    entreprise: state.lead.entreprise
   };
 
-  // TODO [DEPLOIEMENT] : Envoyer via API
-  // Ex: await emailjs.send('service_xxx', 'template_lead', data);
-  // Ex: await fetch(API_ENDPOINT + '/lead', { method: 'POST', body: JSON.stringify(data) });
-  if (EMAIL_SERVICE) {
-    submitToAPI('/lead', data);
-    return;
+  // 1. Envoi vers Supabase
+  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(data)
+      });
+    } catch (e) {
+      console.warn('Supabase insert failed:', e);
+    }
   }
 
-  // Fallback : pas d'envoi automatique sans service email configure.
-  // Les donnees du lead sont conservees dans state.lead et seront
-  // transmises avec les resultats ou la demande de rappel.
-  console.log('[BESS Survey] Lead capture (envoi differe):', JSON.stringify(data));
+  // 2. Envoi vers Google Sheet (via Google Apps Script webhook)
+  if (GOOGLE_SHEET_WEBHOOK) {
+    try {
+      await fetch(GOOGLE_SHEET_WEBHOOK, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } catch (e) {
+      console.warn('Google Sheet insert failed:', e);
+    }
+  }
 }
 
 // ============================================
