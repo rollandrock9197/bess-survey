@@ -1175,12 +1175,22 @@ function setupLeadValidation() {
   fields.forEach(f => document.getElementById(f).addEventListener('input', validate));
   checkbox.addEventListener('change', validate);
 
-  document.getElementById('btnStep0Next').addEventListener('click', () => {
+  document.getElementById('btnStep0Next').addEventListener('click', async () => {
+    const btn = document.getElementById('btnStep0Next');
+    if (btn.dataset.submitting) return;
+    btn.dataset.submitting = 'true';
+    btn.disabled = true;
+    btn.textContent = 'Envoi en cours...';
+
     state.lead.nom = document.getElementById('leadNom').value.trim();
     state.lead.email = document.getElementById('leadEmail').value.trim();
     state.lead.tel = document.getElementById('leadTel').value.trim();
     state.lead.entreprise = document.getElementById('leadEntreprise').value.trim();
-    sendLeadNotification();
+
+    await sendLeadNotification();
+    delete btn.dataset.submitting;
+    btn.disabled = false;
+    btn.textContent = 'Commencer l\'estimation';
     goStep(1);
   });
 }
@@ -1628,6 +1638,11 @@ function restart() {
     document.getElementById(id).disabled = true;
   });
 
+  // Reset submitting guard on step 0 button
+  const btnStep0 = document.getElementById('btnStep0Next');
+  delete btnStep0.dataset.submitting;
+  btnStep0.textContent = 'Commencer l\'estimation';
+
   goStep(0);
 }
 
@@ -1686,6 +1701,13 @@ async function sendLeadNotification() {
       if (resp.ok) {
         const leadId = await resp.json();
         if (leadId) state.leadId = leadId;
+      } else {
+        const errBody = await resp.json().catch(() => null);
+        const errMsg = errBody?.message || '';
+        if (errMsg.includes('Rate limit')) {
+          showToast('Trop de demandes. Veuillez patienter quelques minutes.');
+          return;
+        }
       }
     } catch (e) {
       console.warn('Supabase insert failed:', e);
