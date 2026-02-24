@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoltEdge — Estimez vos economies avec une batterie de stockage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #1B4F72;
+  --primary-light: #2471A3;
+  --accent: #27AE60;
+  --accent-dark: #1E8449;
+  --bg: #F8F9FA;
+  --white: #FFFFFF;
+  --gray-100: #F1F3F5;
+  --gray-200: #E9ECEF;
+  --gray-300: #DEE2E6;
+  --gray-400: #CED4DA;
+  --gray-500: #ADB5BD;
+  --gray-600: #868E96;
+  --gray-700: #495057;
+  --gray-800: #343A40;
+  --gray-900: #212529;
+  --danger: #E74C3C;
+  --warning: #F39C12;
+  --info: #3498DB;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: 300ms ease;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--gray-800);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 32px 0 24px;
+}
+.header .logo {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.5px;
+}
+.header .logo span { color: var(--accent); }
+.header .tagline {
+  font-size: 14px;
+  color: var(--gray-600);
+  margin-top: 4px;
+}
+
+/* Progress bar */
+.progress-wrap {
+  margin-bottom: 32px;
+}
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.progress-step-label {
+  font-size: 11px;
+  color: var(--gray-500);
+  transition: color var(--transition);
+}
+.progress-step-label.active { color: var(--primary); font-weight: 600; }
+.progress-step-label.done { color: var(--accent); }
+.progress-bar {
+  height: 6px;
+  background: var(--gray-200);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: 3px;
+  transition: width 500ms ease;
+  width: 0%;
+}
+
+/* Step panels */
+.step {
+  display: none;
+  animation: fadeIn 300ms ease;
+}
+.step.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+.step-subtitle {
+  font-size: 15px;
+  color: var(--gray-600);
+  margin-bottom: 24px;
+}
+
+/* Cards (radio-style selections) */
+.cards { display: flex; flex-direction: column; gap: 12px; }
+.card {
+  background: var(--white);
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+}
+.card:hover { border-color: var(--primary-light); box-shadow: var(--shadow-sm); }
+.card.selected {
+  border-color: var(--primary);
+  background: #EBF5FB;
+  box-shadow: var(--shadow-md);
+}
+.card .card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+.card .card-desc {
+  font-size: 13px;
+  color: var(--gray-600);
+  line-height: 1.5;
+}
+.card .card-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--gray-300);
+  border-radius: 50%;
+  transition: all var(--transition);
+}
+.card.selected .card-icon {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+.card.selected .card-icon::after {
+  content: '';
+  position: absolute;
+  top: 5px; left: 5px;
+  width: 10px; height: 10px;
+  background: var(--white);
+  border-radius: 50%;
+}
+
+/* Load curve mini illustrations */
+.card .curve-preview {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 64px;
+  margin-top: 12px;
+  padding: 0 2px;
+  border-bottom: 2px solid var(--gray-200);
+  position: relative;
+}
+.card .curve-preview::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--gray-300);
+}
+.card .curve-bar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  opacity: 0.5;
+  transition: opacity var(--transition), background var(--transition);
+}
+.card.selected .curve-bar { opacity: 0.85; }
+/* Spiky profile: red-ish accent for peaks */
+.card[data-value="0.40"] .curve-bar { background: var(--danger); }
+.card[data-value="0.40"] .curve-bar.bar-low { background: var(--gray-400); }
+/* Moderate profile: blue */
+.card[data-value="0.30"] .curve-bar { background: var(--primary); }
+/* Flat profile: green for stable */
+.card[data-value="0.20"] .curve-bar { background: var(--accent); }
+
+/* Form inputs */
+.form-group {
+  margin-bottom: 20px;
+}
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 6px;
+}
+.form-hint {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-bottom: 6px;
+}
+.form-input, .form-select {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-family: inherit;
+  border: 2px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--gray-800);
+  transition: border-color var(--transition);
+  -webkit-appearance: none;
+}
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(27,79,114,0.1);
+}
+.form-input.error { border-color: var(--danger); }
+.form-error {
+  font-size: 12px;
+  color: var(--danger);
+  margin-top: 4px;
+  display: none;
+}
+.form-input.error + .form-error { display: block; }
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+.form-row .form-group { flex: 1; }
+
+/* Checkbox / radio inline */
+.check-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.check-group input[type="checkbox"],
+.check-group input[type="radio"] {
+  width: 18px; height: 18px;
+  accent-color: var(--primary);
+}
+.check-group label {
+  font-size: 14px;
+  color: var(--gray-700);
+  cursor: pointer;
+}
+
+/* Equipment list */
+.equip-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+@media (max-width: 480px) {
+  .equip-grid { grid-template-columns: 1fr; }
+}
+.equip-item {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.equip-item .equip-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-700);
+}
+.equip-item .equip-power {
+  font-size: 11px;
+  color: var(--gray-500);
+}
+.equip-qty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.equip-qty button {
+  width: 28px; height: 28px;
+  border: 1px solid var(--gray-300);
+  border-radius: 50%;
+  background: var(--white);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-700);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+.equip-qty button:hover { background: var(--gray-100); border-color: var(--primary); }
+.equip-qty .qty-val {
+  width: 24px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Buttons */
+.btn-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+.btn {
+  flex: 1;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: center;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary {
+  background: var(--primary);
+  color: var(--white);
+}
+.btn-primary:hover:not(:disabled) { background: var(--primary-light); }
+.btn-accent {
+  background: var(--accent);
+  color: var(--white);
+}
+.btn-accent:hover:not(:disabled) { background: var(--accent-dark); }
+.btn-outline {
+  background: transparent;
+  color: var(--gray-600);
+  border: 2px solid var(--gray-300);
+}
+.btn-outline:hover { border-color: var(--gray-500); color: var(--gray-800); }
+
+/* Results page */
+.results-hero {
+  background: linear-gradient(135deg, var(--primary), #1A5276);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  color: var(--white);
+  text-align: center;
+  margin-bottom: 24px;
+}
+.results-hero .hero-label {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-bottom: 8px;
+}
+.results-hero .hero-amount {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.results-hero .hero-range {
+  font-size: 15px;
+  opacity: 0.75;
+}
+.results-hero .hero-unit {
+  font-size: 14px;
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+.result-section {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.result-section h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 16px;
+}
+
+/* Breakdown table */
+.breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.breakdown-table td {
+  padding: 10px 0;
+  font-size: 14px;
+  border-bottom: 1px solid var(--gray-100);
+}
+.breakdown-table td:last-child {
+  text-align: right;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+.breakdown-table tr.total td {
+  border-bottom: none;
+  border-top: 2px solid var(--primary);
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 16px;
+  padding-top: 14px;
+}
+
+/* Bar chart */
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 180px;
+  padding: 0 4px;
+  margin-bottom: 8px;
+}
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.bar-val {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--primary);
+  white-space: nowrap;
+}
+.bar-fill {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  transition: height 800ms ease;
+  min-height: 4px;
+}
+.bar-fill.cumul { background: linear-gradient(180deg, var(--accent), #2ECC71); }
+.bar-fill.annual { background: linear-gradient(180deg, var(--primary), var(--primary-light)); }
+.bar-label {
+  font-size: 10px;
+  color: var(--gray-500);
+  margin-top: 4px;
+}
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--gray-600);
+}
+.chart-legend span::before {
+  content: '';
+  display: inline-block;
+  width: 12px; height: 12px;
+  border-radius: 3px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.chart-legend .leg-annual::before { background: var(--primary); }
+.chart-legend .leg-cumul::before { background: var(--accent); }
+
+/* Battery sizing box */
+.battery-box {
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.battery-stat { text-align: center; }
+.battery-stat .stat-val {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.battery-stat .stat-label {
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+/* Explainer / disclaimer */
+.explainer {
+  background: #EBF5FB;
+  border-left: 4px solid var(--info);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 16px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--gray-700);
+  line-height: 1.6;
+}
+.explainer strong { color: var(--primary); }
+
+.disclaimer {
+  font-size: 11px;
+  color: var(--gray-500);
+  margin-top: 16px;
+  line-height: 1.5;
+}
+
+/* CTA buttons on results */
+.cta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
+}
+.cta-btn {
+  display: block;
+  padding: 16px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--transition);
+}
+.cta-primary {
+  background: var(--accent);
+  color: var(--white);
+}
+.cta-primary:hover { background: var(--accent-dark); }
+.cta-secondary {
+  background: var(--white);
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+.cta-secondary:hover { background: #EBF5FB; }
+
+/* Low savings message */
+.low-savings {
+  background: #FEF9E7;
+  border-left: 4px solid var(--warning);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.low-savings h4 {
+  font-size: 15px;
+  color: var(--warning);
+  margin-bottom: 8px;
+}
+.low-savings p {
+  font-size: 13px;
+  color: var(--gray-700);
+}
+
+.high-savings {
+  background: #EAFAF1;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--gray-700);
+}
+
+/* RGPD */
+.rgpd-text {
+  font-size: 11px;
+  color: var(--gray-500);
+  line-height: 1.5;
+  margin-top: 4px;
+  margin-left: 28px;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--gray-900);
+  color: var(--white);
+  padding: 14px 24px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1000;
+  opacity: 0;
+  transition: all 400ms ease;
+  box-shadow: var(--shadow-lg);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Accessible focus styles */
+.card:focus-visible, .btn:focus-visible, .cta-btn:focus-visible {
+  outline: 3px solid var(--primary-light);
+  outline-offset: 2px;
+}
+
+/* Estimated power display */
+.estimated-power {
+  background: #EAFAF1;
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-top: 16px;
+  text-align: center;
+}
+.estimated-power .est-val {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.estimated-power .est-label {
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .header .logo { font-size: 24px; }
+  .step-title { font-size: 19px; }
+  .results-hero .hero-amount { font-size: 28px; }
+  .form-row { flex-direction: column; gap: 0; }
+  .battery-box { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .bar-chart { height: 140px; }
+  .bar-val { font-size: 9px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">Volt<span>Edge</span></div>
+    <div class="tagline">Stockage par batterie pour les entreprises</div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <span class="progress-step-label active" data-step="0">Contact</span>
+      <span class="progress-step-label" data-step="1">Tarif</span>
+      <span class="progress-step-label" data-step="2">Puissance</span>
+      <span class="progress-step-label" data-step="3">Profil</span>
+      <span class="progress-step-label" data-step="4">Resultats</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- ===================== STEP 0: Lead capture ===================== -->
+  <div class="step active" id="step0" role="region" aria-label="Informations de contact">
+    <h2 class="step-title">Estimez vos economies avec une batterie de stockage</h2>
+    <p class="step-subtitle">Decouvrez combien votre entreprise pourrait economiser sur son abonnement electrique et ses frais reseau (TURPE) grace a l'ecretement de pointe.</p>
+
+    <div class="form-group">
+      <label class="form-label" for="leadNom">Nom *</label>
+      <input class="form-input" type="text" id="leadNom" placeholder="Votre nom" required autocomplete="name" aria-required="true">
+      <div class="form-error">Veuillez entrer votre nom</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="leadEmail">Email professionnel *</label>
+      <input class="form-input" type="email" id="leadEmail" placeholder="prenom@entreprise.fr" required autocomplete="email" aria-required="true">
+      <div class="form-error">Veuillez entrer un email valide</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="leadTel">Telephone</label>
+        <input class="form-input" type="tel" id="leadTel" placeholder="06 12 34 56 78" autocomplete="tel">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="leadEntreprise">Entreprise *</label>
+        <input class="form-input" type="text" id="leadEntreprise" placeholder="Nom de l'entreprise" required autocomplete="organization" aria-required="true">
+        <div class="form-error">Veuillez entrer le nom de votre entreprise</div>
+      </div>
+    </div>
+
+    <div class="check-group">
+      <input type="checkbox" id="rgpdConsent" aria-describedby="rgpdText">
+      <label for="rgpdConsent">J'accepte que mes donnees soient traitees par VoltEdge *</label>
+    </div>
+    <p class="rgpd-text" id="rgpdText">Vos donnees sont utilisees uniquement pour vous fournir votre estimation et vous recontacter si vous le souhaitez. Conformement au RGPD, vous pouvez exercer vos droits d'acces, de rectification et de suppression a tout moment en nous contactant.</p>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btnStep0Next" disabled aria-label="Passer a l'etape suivante">Commencer l'estimation</button>
+    </div>
+  </div>
+
+  <!-- ===================== STEP 1: Tariff category ===================== -->
+  <div class="step" id="step1" role="region" aria-label="Categorie tarifaire">
+    <h2 class="step-title">Quel est le profil electrique de votre entreprise ?</h2>
+    <p class="step-subtitle">Selectionnez la categorie qui correspond le mieux a votre site.</p>
+
+    <div class="cards" role="radiogroup" aria-label="Categorie tarifaire">
+      <div class="card" tabindex="0" role="radio" aria-checked="false" data-value="C5" onclick="selectCard(this, 'tariff')">
+        <div class="card-icon"></div>
+        <div class="card-title">Petit professionnel</div>
+        <div class="card-desc">Puissance &le; 36 kVA &middot; Facture &lt; 500 &euro;/mois<br>Commerce, cabinet, petit atelier</div>
+      </div>
+      <div class="card" tabindex="0" role="radio" aria-checked="false" data-value="C4" onclick="selectCard(this, 'tariff')">
+        <div class="card-icon"></div>
+        <div class="card-title">Entreprise moyenne</div>
+        <div class="card-desc">37 &ndash; 250 kVA &middot; Facture 500 &ndash; 5 000 &euro;/mois<br>Restaurant, hotel, PME industrielle</div>
+      </div>
+      <div class="card" tabindex="0" role="radio" aria-checked="false" data-value="C2" onclick="selectCard(this, 'tariff')">
+        <div class="card-icon"></div>
+        <div class="card-title">Grande entreprise / site industriel</div>
+        <div class="card-desc">Puissance &gt; 250 kW (HTA) &middot; Facture &gt; 5 000 &euro;/mois<br>Usine, centre logistique, grand tertiaire</div>
+      </div>
+      <div class="card" tabindex="0" role="radio" aria-checked="false" data-value="unknown" onclick="selectCard(this, 'tariff')">
+        <div class="card-icon"></div>
+        <div class="card-title">Je ne sais pas</div>
+        <div class="card-desc">Pas de souci ! Nous allons estimer votre profil a partir de vos equipements.</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goStep(0)">Retour</button>
+      <button class="btn btn-primary" id="btnStep1Next" disabled onclick="handleStep1Next()">Suivant</button>
+    </div>
+  </div>
+
+  <!-- ===================== STEP 2: Power input method ===================== -->
+  <div class="step" id="step2" role="region" aria-label="Methode de saisie de la puissance">
+    <h2 class="step-title">Connaissez-vous votre puissance souscrite ?</h2>
+    <p class="step-subtitle">Cette information se trouve sur votre facture d'electricite ou votre contrat de fourniture.</p>
+
+    <div class="cards" role="radiogroup" aria-label="Methode de saisie">
+      <div class="card" tabindex="0" role="radio" aria-checked="false" data-value="direct" onclick="selectCard(this, 'powerMethod')">
+        <div class="card-icon"></div>
+        <div class="card-title">Oui, je connais ma puissance souscrite</div>
+        <div class="card-desc">Je peux renseigner directement la valeur en kVA ou kW.</div>
+      </div>
+      <div class="card" tabindex="0" role="radio" aria-checked="false" data-value="estimate" onclick="selectCard(this, 'powerMethod')">
+        <div class="card-icon"></div>
+        <div class="card-title">Non, aidez-moi a l'estimer</div>
+        <div class="card-desc">Nous allons estimer votre puissance a partir de vos locaux et equipements.</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goStep(1)">Retour</button>
+      <button class="btn btn-primary" id="btnStep2Next" disabled onclick="handleStep2Next()">Suivant</button>
+    </div>
+  </div>
+
+  <!-- ===================== STEP 3a: Direct power input ===================== -->
+  <div class="step" id="step3a" role="region" aria-label="Saisie de la puissance souscrite">
+    <h2 class="step-title">Quelle est votre puissance souscrite ?</h2>
+    <p class="step-subtitle">Indiquez la puissance figurant sur votre contrat.</p>
+
+    <div class="form-group">
+      <label class="form-label" for="puissanceInput">Puissance souscrite</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input class="form-input" type="number" id="puissanceInput" placeholder="Ex: 80" min="3" max="10000" step="1" style="flex:1" aria-label="Puissance souscrite en kVA ou kW">
+        <span style="font-size:15px;font-weight:600;color:var(--gray-600);" id="puissanceUnit">kVA</span>
+      </div>
+      <div class="form-error" id="puissanceError">Veuillez entrer une puissance valide</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Option d'utilisation</label>
+      <p class="form-hint">Si vous ne savez pas, laissez "Courte utilisation" (option la plus courante).</p>
+      <div class="check-group">
+        <input type="radio" name="usageOption" id="usageCU" value="CU" checked>
+        <label for="usageCU">Courte utilisation (CU)</label>
+      </div>
+      <div class="check-group">
+        <input type="radio" name="usageOption" id="usageLU" value="LU">
+        <label for="usageLU">Longue utilisation (LU)</label>
+      </div>
+      <div class="check-group">
+        <input type="radio" name="usageOption" id="usageUnknown" value="CU">
+        <label for="usageUnknown">Je ne sais pas</label>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goStep(2)">Retour</button>
+      <button class="btn btn-primary" id="btnStep3aNext" onclick="handleStep3aNext()">Suivant</button>
+    </div>
+  </div>
+
+  <!-- ===================== STEP 3b: Equipment estimation ===================== -->
+  <div class="step" id="step3b" role="region" aria-label="Estimation par equipements">
+    <h2 class="step-title">Decrivez vos locaux et equipements</h2>
+    <p class="step-subtitle">Nous allons estimer votre puissance electrique necessaire.</p>
+
+    <div class="form-group">
+      <label class="form-label" for="surfaceInput">Surface des locaux (m&sup2;)</label>
+      <input class="form-input" type="number" id="surfaceInput" placeholder="Ex: 300" min="10" max="50000" step="1">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Climatisation / chauffage electrique ?</label>
+      <div class="check-group">
+        <input type="radio" name="hvac" id="hvacNon" value="none" checked>
+        <label for="hvacNon">Non, pas de chauffage/clim electrique</label>
+      </div>
+      <div class="check-group">
+        <input type="radio" name="hvac" id="hvacClim" value="clim">
+        <label for="hvacClim">Oui, climatisation uniquement</label>
+      </div>
+      <div class="check-group">
+        <input type="radio" name="hvac" id="hvacChauffage" value="chauffage">
+        <label for="hvacChauffage">Oui, chauffage electrique</label>
+      </div>
+      <div class="check-group">
+        <input type="radio" name="hvac" id="hvacBoth" value="both">
+        <label for="hvacBoth">Oui, les deux (chauffage + climatisation)</label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Equipements principaux</label>
+      <p class="form-hint">Indiquez le nombre de chaque equipement present sur votre site.</p>
+      <div class="equip-grid" id="equipGrid"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Fonctionnement simultane des equipements</label>
+      <div class="cards" role="radiogroup" aria-label="Simultaneite" style="gap:8px;">
+        <div class="card" tabindex="0" role="radio" aria-checked="false" data-value="0.85" onclick="selectCard(this, 'simultaneity')" style="padding:14px 16px;">
+          <div class="card-icon"></div>
+          <div class="card-title" style="font-size:14px;">Tout en meme temps</div>
+          <div class="card-desc" style="font-size:12px;">La plupart des equipements tournent en meme temps</div>
+        </div>
+        <div class="card selected" tabindex="0" role="radio" aria-checked="true" data-value="0.65" onclick="selectCard(this, 'simultaneity')" style="padding:14px 16px;">
+          <div class="card-icon"></div>
+          <div class="card-title" style="font-size:14px;">Partiellement</div>
+          <div class="card-desc" style="font-size:12px;">Certains equipements fonctionnent en alternance</div>
+        </div>
+        <div class="card" tabindex="0" role="radio" aria-checked="false" data-value="0.45" onclick="selectCard(this, 'simultaneity')" style="padding:14px 16px;">
+          <div class="card-icon"></div>
+          <div class="card-title" style="font-size:14px;">A tour de role</div>
+          <div class="card-desc" style="font-size:12px;">Les equipements fonctionnent rarement ensemble</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="estimated-power" id="estimatedPowerBox" style="display:none;">
+      <div class="est-label">Puissance estimee</div>
+      <div class="est-val" id="estimatedPowerVal">0 kVA</div>
+      <div class="est-label" style="margin-top:4px;font-size:11px;color:var(--gray-500);" id="estimatedTariffNote"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goStep(2)">Retour</button>
+      <button class="btn btn-primary" onclick="handleStep3bNext()">Suivant</button>
+    </div>
+  </div>
+
+  <!-- ===================== STEP 4: Usage profile ===================== -->
+  <div class="step" id="step4" role="region" aria-label="Profil de consommation">
+    <h2 class="step-title">Quel est le profil de consommation de votre site ?</h2>
+    <p class="step-subtitle">Selectionnez le schema qui ressemble le plus a votre activite.</p>
+
+    <div class="cards" role="radiogroup" aria-label="Profil de consommation">
+      <div class="card" tabindex="0" role="radio" aria-checked="false" data-value="0.40" onclick="selectCard(this, 'profile')">
+        <div class="card-icon"></div>
+        <div class="card-title">Pics importants et courts</div>
+        <div class="card-desc">Boulangerie, station de lavage, presse industrielle, soudure... Des pointes de consommation fortes mais breves.</div>
+        <div class="curve-preview" aria-hidden="true">
+          <div class="curve-bar bar-low" style="height:12%"></div>
+          <div class="curve-bar bar-low" style="height:15%"></div>
+          <div class="curve-bar bar-low" style="height:14%"></div>
+          <div class="curve-bar" style="height:95%"></div>
+          <div class="curve-bar bar-low" style="height:13%"></div>
+          <div class="curve-bar bar-low" style="height:11%"></div>
+          <div class="curve-bar bar-low" style="height:16%"></div>
+          <div class="curve-bar bar-low" style="height:12%"></div>
+          <div class="curve-bar" style="height:88%"></div>
+          <div class="curve-bar bar-low" style="height:14%"></div>
+          <div class="curve-bar bar-low" style="height:10%"></div>
+          <div class="curve-bar bar-low" style="height:13%"></div>
+          <div class="curve-bar" style="height:92%"></div>
+          <div class="curve-bar bar-low" style="height:15%"></div>
+          <div class="curve-bar bar-low" style="height:11%"></div>
+          <div class="curve-bar bar-low" style="height:12%"></div>
+        </div>
+      </div>
+      <div class="card" tabindex="0" role="radio" aria-checked="false" data-value="0.30" onclick="selectCard(this, 'profile')">
+        <div class="card-icon"></div>
+        <div class="card-title">Pics moderes</div>
+        <div class="card-desc">Restaurant, hotel, commerce de detail, supermarche... Des variations regulieres avec des pics aux heures de pointe.</div>
+        <div class="curve-preview" aria-hidden="true">
+          <div class="curve-bar" style="height:25%"></div>
+          <div class="curve-bar" style="height:32%"></div>
+          <div class="curve-bar" style="height:45%"></div>
+          <div class="curve-bar" style="height:65%"></div>
+          <div class="curve-bar" style="height:72%"></div>
+          <div class="curve-bar" style="height:55%"></div>
+          <div class="curve-bar" style="height:38%"></div>
+          <div class="curve-bar" style="height:30%"></div>
+          <div class="curve-bar" style="height:42%"></div>
+          <div class="curve-bar" style="height:68%"></div>
+          <div class="curve-bar" style="height:75%"></div>
+          <div class="curve-bar" style="height:58%"></div>
+          <div class="curve-bar" style="height:40%"></div>
+          <div class="curve-bar" style="height:28%"></div>
+          <div class="curve-bar" style="height:22%"></div>
+          <div class="curve-bar" style="height:20%"></div>
+        </div>
+      </div>
+      <div class="card" tabindex="0" role="radio" aria-checked="false" data-value="0.20" onclick="selectCard(this, 'profile')">
+        <div class="card-icon"></div>
+        <div class="card-title">Consommation reguliere</div>
+        <div class="card-desc">Bureau, entrepot, data center... Une consommation stable, peu de pointes marquees.</div>
+        <div class="curve-preview" aria-hidden="true">
+          <div class="curve-bar" style="height:48%"></div>
+          <div class="curve-bar" style="height:50%"></div>
+          <div class="curve-bar" style="height:51%"></div>
+          <div class="curve-bar" style="height:49%"></div>
+          <div class="curve-bar" style="height:50%"></div>
+          <div class="curve-bar" style="height:52%"></div>
+          <div class="curve-bar" style="height:50%"></div>
+          <div class="curve-bar" style="height:49%"></div>
+          <div class="curve-bar" style="height:51%"></div>
+          <div class="curve-bar" style="height:50%"></div>
+          <div class="curve-bar" style="height:48%"></div>
+          <div class="curve-bar" style="height:50%"></div>
+          <div class="curve-bar" style="height:51%"></div>
+          <div class="curve-bar" style="height:49%"></div>
+          <div class="curve-bar" style="height:50%"></div>
+          <div class="curve-bar" style="height:49%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" id="btnStep4Back" onclick="goStepBack4()">Retour</button>
+      <button class="btn btn-accent" id="btnStep4Next" disabled onclick="calculateAndShowResults()">Voir mes resultats</button>
+    </div>
+  </div>
+
+  <!-- ===================== STEP 5: Results ===================== -->
+  <div class="step" id="step5" role="region" aria-label="Resultats de l'estimation">
+
+    <!-- Low savings alert -->
+    <div class="low-savings" id="lowSavingsMsg" style="display:none;">
+      <h4>Economies limitees pour votre profil</h4>
+      <p>Avec votre configuration actuelle, les economies sur l'abonnement et le TURPE via le peak shaving sont modestes. D'autres leviers (autoconsommation solaire, optimisation tarifaire, effacement marche) pourraient etre plus adaptes. Contactez-nous pour une analyse complete.</p>
+    </div>
+
+    <!-- High savings note -->
+    <div class="high-savings" id="highSavingsMsg" style="display:none;">
+      <strong>Potentiel important detecte.</strong> Pour un site de cette taille, nous recommandons un audit energetique sur site afin d'affiner l'estimation et optimiser le dimensionnement de la batterie.
+    </div>
+
+    <!-- Hero -->
+    <div class="results-hero" id="resultsHero">
+      <div class="hero-label">Economies annuelles estimees</div>
+      <div class="hero-amount" id="heroAmount">0 &euro;</div>
+      <div class="hero-range" id="heroRange"></div>
+      <div class="hero-unit">sur votre abonnement et frais reseau (TURPE)</div>
+    </div>
+
+    <!-- Breakdown -->
+    <div class="result-section">
+      <h3>Detail de l'estimation</h3>
+      <table class="breakdown-table" id="breakdownTable">
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- 10-year chart -->
+    <div class="result-section">
+      <h3>Projection sur 10 ans</h3>
+      <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">Avec une hausse annuelle du TURPE de 3,5% (scenario central)</p>
+      <div class="bar-chart" id="barChart"></div>
+      <div class="chart-legend">
+        <span class="leg-annual">Economie annuelle</span>
+        <span class="leg-cumul">Cumul</span>
+      </div>
+    </div>
+
+    <!-- Battery sizing -->
+    <div class="result-section">
+      <h3>Dimensionnement indicatif de la batterie</h3>
+      <div class="battery-box" id="batteryBox">
+        <div class="battery-stat">
+          <div class="stat-val" id="battPower">-</div>
+          <div class="stat-label">Puissance (kW)</div>
+        </div>
+        <div class="battery-stat">
+          <div class="stat-val" id="battCapacity">-</div>
+          <div class="stat-label">Capacite (kWh)</div>
+        </div>
+        <div class="battery-stat">
+          <div class="stat-val" id="battCost">-</div>
+          <div class="stat-label">Cout indicatif</div>
+        </div>
+        <div class="battery-stat">
+          <div class="stat-val" id="battPayback">-</div>
+          <div class="stat-label">Retour sur investissement</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explainers -->
+    <div class="result-section">
+      <h3>Comment ca marche ?</h3>
+      <div class="explainer">
+        <strong>Qu'est-ce que l'ecretement de pointe (peak shaving) ?</strong><br>
+        Une batterie s'installe derriere votre compteur et se charge pendant les periodes creuses. Lorsque votre consommation atteint un pic, la batterie fournit l'energie supplementaire, ce qui reduit la puissance que vous appelez sur le reseau. Vous pouvez alors souscrire un abonnement moins puissant et payer moins de frais reseau (TURPE).
+      </div>
+      <div class="explainer" style="margin-top:12px;">
+        <strong>Pourquoi le TURPE augmente chaque annee ?</strong><br>
+        Le reseau electrique francais necessite 196 milliards d'euros d'investissements d'ici 2040 (renovation, raccordement des energies renouvelables, bornes de recharge VE). Ces investissements sont finances par le TURPE, dont la hausse structurelle est estimee a 3 a 5% par an. Plus le TURPE augmente, plus le peak shaving devient rentable.
+      </div>
+    </div>
+
+    <!-- C5 context -->
+    <div class="result-section" id="c5Context" style="display:none;">
+      <h3>A propos de votre profil (petit professionnel)</h3>
+      <div class="explainer">
+        Pour les sites en tarif bleu (&le; 36 kVA), les economies de peak shaving portent principalement sur le TURPE (composante fixe). La prime fixe de fourniture est negligeable a ce niveau de puissance. Pour maximiser vos economies, envisagez l'autoconsommation solaire comme complement au stockage.
+      </div>
+    </div>
+
+    <!-- Disclaimers -->
+    <p class="disclaimer">
+      * Estimation indicative basee sur les baremes TURPE 7 (aout 2025) et les grilles tarifaires de fourniture (fev. 2026). Les economies reelles dependent de votre courbe de charge precise, de votre contrat de fourniture et du dimensionnement final de la batterie. Cette estimation ne constitue pas une offre commerciale. Les projections a 10 ans utilisent un taux d'escalade du TURPE de 3,5%/an (scenario central).
+    </p>
+
+    <!-- CTAs -->
+    <div class="cta-row">
+      <button class="cta-btn cta-primary" onclick="sendEstimationToVisitor()">Recevoir mon estimation par email</button>
+      <button class="cta-btn cta-secondary" onclick="requestCallback()">Etre rappele(e) par un conseiller</button>
+    </div>
+
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn btn-outline" onclick="restart()" style="flex:none;padding:10px 20px;font-size:13px;">Recommencer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================
+// STATE
+// ============================================
+const state = {
+  currentStep: 0,
+  lead: { nom: '', email: '', tel: '', entreprise: '' },
+  tariff: null,       // C5, C4, C2, unknown
+  powerMethod: null,  // direct, estimate
+  puissance: 0,       // kVA or kW
+  usageOption: 'CU',  // CU or LU
+  profile: null,      // 0.20, 0.30, 0.40
+  simultaneity: 0.65,
+  estimatedFromEquipment: false,
+  detectedTariff: null
+};
+
+// ============================================
+// RATE TABLES
+// ============================================
+const RATES = {
+  // TURPE+CTA per kVA/kW reduced (CS part fixe only)
+  turpe: {
+    C5: { CU: 11.63 },
+    C4: { CU: 20.25, LU: 34.68 },
+    C2: { CU: 16.57, LU: 40.63 }
+  },
+  // Total consolidated savings (prime fixe fourniture + TURPE + CTA)
+  consolidated: {
+    C5: { CU: 11.63 },  // C5: no significant prime fixe, uses TURPE+CTA only
+    C4: { CU: 111, LU: 168 },
+    C2: { CU: 115, LU: 197 }
+  },
+  // C4->C5 threshold crossing bonus
+  c4c5Bonus: 493,
+  // TURPE escalation rate (scenario central)
+  escalation: 0.035,
+  // Battery cost per kW
+  batteryCostPerKW: 400
+};
+
+// Equipment definitions
+const EQUIPMENT = [
+  { id: 'fours',      name: 'Four professionnel',      power: 28, icon: '' },
+  { id: 'froids',     name: 'Chambre froide',          power: 10, icon: '' },
+  { id: 'compresseur',name: 'Compresseur industriel',   power: 20, icon: '' },
+  { id: 'machines',   name: 'Machine-outil',            power: 12, icon: '' },
+  { id: 'bornesVE',   name: 'Borne de recharge VE',     power: 14, icon: '' },
+  { id: 'pompes',     name: 'Pompe industrielle',        power: 10, icon: '' },
+  { id: 'eclairage',  name: 'Eclairage industriel',      power: 5,  icon: '' },
+  { id: 'serveurs',   name: 'Salle serveurs / baie IT',  power: 8,  icon: '' }
+];
+
+const equipQty = {};
+EQUIPMENT.forEach(e => equipQty[e.id] = 0);
+
+// ============================================
+// INIT
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+  buildEquipmentGrid();
+  setupLeadValidation();
+  updateProgress();
+});
+
+function buildEquipmentGrid() {
+  const grid = document.getElementById('equipGrid');
+  EQUIPMENT.forEach(eq => {
+    const item = document.createElement('div');
+    item.className = 'equip-item';
+    item.innerHTML = `
+      <div>
+        <div class="equip-name">${eq.name}</div>
+        <div class="equip-power">${eq.power} kW/unite</div>
+      </div>
+      <div class="equip-qty">
+        <button type="button" aria-label="Diminuer ${eq.name}" onclick="changeQty('${eq.id}', -1)">-</button>
+        <span class="qty-val" id="qty_${eq.id}">0</span>
+        <button type="button" aria-label="Augmenter ${eq.name}" onclick="changeQty('${eq.id}', 1)">+</button>
+      </div>
+    `;
+    grid.appendChild(item);
+  });
+}
+
+function changeQty(id, delta) {
+  equipQty[id] = Math.max(0, equipQty[id] + delta);
+  document.getElementById('qty_' + id).textContent = equipQty[id];
+  updateEstimatedPower();
+}
+
+// ============================================
+// LEAD VALIDATION
+// ============================================
+function setupLeadValidation() {
+  const fields = ['leadNom', 'leadEmail', 'leadEntreprise'];
+  const checkbox = document.getElementById('rgpdConsent');
+
+  function validate() {
+    const nom = document.getElementById('leadNom').value.trim();
+    const email = document.getElementById('leadEmail').value.trim();
+    const entreprise = document.getElementById('leadEntreprise').value.trim();
+    const consent = checkbox.checked;
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    document.getElementById('btnStep0Next').disabled =
+      !(nom && email && emailValid && entreprise && consent);
+  }
+
+  fields.forEach(f => document.getElementById(f).addEventListener('input', validate));
+  checkbox.addEventListener('change', validate);
+
+  document.getElementById('btnStep0Next').addEventListener('click', () => {
+    state.lead.nom = document.getElementById('leadNom').value.trim();
+    state.lead.email = document.getElementById('leadEmail').value.trim();
+    state.lead.tel = document.getElementById('leadTel').value.trim();
+    state.lead.entreprise = document.getElementById('leadEntreprise').value.trim();
+    sendLeadNotification();
+    goStep(1);
+  });
+}
+
+// ============================================
+// CARD SELECTION
+// ============================================
+function selectCard(el, field) {
+  const parent = el.closest('.cards');
+  parent.querySelectorAll('.card').forEach(c => {
+    c.classList.remove('selected');
+    c.setAttribute('aria-checked', 'false');
+  });
+  el.classList.add('selected');
+  el.setAttribute('aria-checked', 'true');
+
+  const val = el.dataset.value;
+
+  if (field === 'tariff') {
+    state.tariff = val;
+    document.getElementById('btnStep1Next').disabled = false;
+  } else if (field === 'powerMethod') {
+    state.powerMethod = val;
+    document.getElementById('btnStep2Next').disabled = false;
+  } else if (field === 'profile') {
+    state.profile = parseFloat(val);
+    document.getElementById('btnStep4Next').disabled = false;
+  } else if (field === 'simultaneity') {
+    state.simultaneity = parseFloat(val);
+    updateEstimatedPower();
+  }
+}
+
+// Keyboard support for cards
+document.addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('card')) {
+    e.preventDefault();
+    e.target.click();
+  }
+});
+
+// ============================================
+// NAVIGATION
+// ============================================
+function goStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+
+  // Map logical step to DOM step
+  const stepMap = { 0: 'step0', 1: 'step1', 2: 'step2', '3a': 'step3a', '3b': 'step3b', 4: 'step4', 5: 'step5' };
+  const stepId = stepMap[n] || ('step' + n);
+  document.getElementById(stepId).classList.add('active');
+
+  // Update unit display for C2
+  if (n === '3a' || n === 2) {
+    const unit = (state.tariff === 'C2') ? 'kW' : 'kVA';
+    document.getElementById('puissanceUnit').textContent = unit;
+  }
+
+  state.currentStep = n;
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateProgress() {
+  const stepOrder = [0, 1, 2, '3a', '3b', 4, 5];
+  const progressMap = { 0: 0, 1: 1, 2: 2, '3a': 2, '3b': 2, 4: 3, 5: 4 };
+  const progressIdx = progressMap[state.currentStep] ?? 0;
+  const pct = (progressIdx / 4) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  document.querySelectorAll('.progress-step-label').forEach(lbl => {
+    const s = parseInt(lbl.dataset.step);
+    lbl.classList.remove('active', 'done');
+    if (s === progressIdx) lbl.classList.add('active');
+    else if (s < progressIdx) lbl.classList.add('done');
+  });
+}
+
+function handleStep1Next() {
+  if (state.tariff === 'unknown') {
+    // Route to equipment estimation, skip power method choice
+    state.powerMethod = 'estimate';
+    goStep('3b');
+  } else {
+    goStep(2);
+  }
+}
+
+function handleStep2Next() {
+  if (state.powerMethod === 'direct') {
+    goStep('3a');
+  } else {
+    goStep('3b');
+  }
+}
+
+function handleStep3aNext() {
+  const input = document.getElementById('puissanceInput');
+  const val = parseFloat(input.value);
+  if (!val || val < 3 || val > 10000) {
+    input.classList.add('error');
+    return;
+  }
+  input.classList.remove('error');
+
+  state.puissance = val;
+  state.usageOption = document.querySelector('input[name="usageOption"]:checked').value;
+  state.estimatedFromEquipment = false;
+  goStep(4);
+}
+
+function handleStep3bNext() {
+  const est = computeEstimatedPower();
+  if (est < 3) {
+    showToast('Veuillez renseigner au moins la surface de vos locaux.');
+    return;
+  }
+  state.puissance = Math.round(est);
+  state.usageOption = 'CU';
+  state.estimatedFromEquipment = true;
+
+  // Auto-detect tariff if unknown
+  if (state.tariff === 'unknown' || state.tariff === null) {
+    if (state.puissance <= 36) {
+      state.tariff = 'C5';
+      state.detectedTariff = 'C5';
+    } else if (state.puissance <= 250) {
+      state.tariff = 'C4';
+      state.detectedTariff = 'C4';
+    } else {
+      state.tariff = 'C2';
+      state.detectedTariff = 'C2';
+    }
+  }
+
+  goStep(4);
+}
+
+function goStepBack4() {
+  if (state.powerMethod === 'direct') goStep('3a');
+  else if (state.powerMethod === 'estimate') goStep('3b');
+  else goStep(2);
+}
+
+// ============================================
+// EQUIPMENT ESTIMATION
+// ============================================
+function computeEstimatedPower() {
+  const surface = parseFloat(document.getElementById('surfaceInput').value) || 0;
+  const hvac = document.querySelector('input[name="hvac"]:checked').value;
+
+  // Base load: ~30 W/m2 for general lighting + misc
+  const baseLoad = surface * 0.03; // kW
+
+  // HVAC
+  let hvacLoad = 0;
+  if (hvac === 'clim') hvacLoad = surface * 0.06;        // 60 W/m2
+  else if (hvac === 'chauffage') hvacLoad = surface * 0.08; // 80 W/m2
+  else if (hvac === 'both') hvacLoad = surface * 0.10;    // 100 W/m2
+
+  // Equipment sum
+  let equipSum = 0;
+  EQUIPMENT.forEach(eq => {
+    equipSum += equipQty[eq.id] * eq.power;
+  });
+
+  const sim = state.simultaneity;
+  const raw = (baseLoad + hvacLoad + equipSum) * sim * 1.1 * 1.15;
+  return raw;
+}
+
+function updateEstimatedPower() {
+  const est = computeEstimatedPower();
+  const box = document.getElementById('estimatedPowerBox');
+  if (est >= 3) {
+    box.style.display = 'block';
+    document.getElementById('estimatedPowerVal').textContent = Math.round(est) + ' kVA';
+    let note = '';
+    if (est <= 36) note = 'Profil detecte : Petit professionnel (C5)';
+    else if (est <= 250) note = 'Profil detecte : Entreprise moyenne (C4)';
+    else note = 'Profil detecte : Grande entreprise / site industriel (C2)';
+    document.getElementById('estimatedTariffNote').textContent = note;
+  } else {
+    box.style.display = 'none';
+  }
+}
+
+// Also update on surface/hvac changes
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'surfaceInput') updateEstimatedPower();
+});
+document.addEventListener('change', (e) => {
+  if (e.target.name === 'hvac') updateEstimatedPower();
+});
+
+// ============================================
+// CALCULATION ENGINE
+// ============================================
+function calculateAndShowResults() {
+  const P = state.puissance;
+  const tariff = state.tariff;
+  const usage = state.usageOption;
+  const reduction = state.profile; // 0.20 / 0.30 / 0.40
+
+  // 1. Reduced power
+  const puissanceReduite = P * reduction;
+  const newPuissance = P - puissanceReduite;
+
+  // 2. Get rate
+  const rate = RATES.consolidated[tariff]?.[usage] ?? RATES.consolidated[tariff]?.CU ?? 111;
+  const turpeRate = RATES.turpe[tariff]?.[usage] ?? RATES.turpe[tariff]?.CU ?? 20.25;
+
+  // 3. Base annual savings
+  let annualSavings = puissanceReduite * rate;
+
+  // For C5, use only TURPE+CTA (no prime fixe)
+  if (tariff === 'C5') {
+    annualSavings = puissanceReduite * RATES.turpe.C5.CU;
+  }
+
+  // 4. C4->C5 crossing bonus
+  let c4c5Bonus = 0;
+  if (tariff === 'C4' && newPuissance <= 36) {
+    c4c5Bonus = RATES.c4c5Bonus;
+    annualSavings += c4c5Bonus;
+  }
+
+  // 5. Display range
+  const low = annualSavings * 0.75;
+  const high = annualSavings * 1.30;
+
+  // 6. 10-year projection
+  const escalation = RATES.escalation;
+  const years = [];
+  let cumul = 0;
+  for (let y = 1; y <= 10; y++) {
+    const yearSavings = annualSavings * Math.pow(1 + escalation, y - 1);
+    cumul += yearSavings;
+    years.push({ year: y, annual: yearSavings, cumul: cumul });
+  }
+
+  // 7. Battery sizing
+  const battPower = Math.round(puissanceReduite);
+  const battCapacity = battPower * 2; // 2h autonomy
+  const battCost = battPower * RATES.batteryCostPerKW;
+  const payback = annualSavings > 0 ? battCost / annualSavings : 999;
+
+  // ============================================
+  // RENDER RESULTS
+  // ============================================
+
+  // Edge cases
+  const lowSavingsMsg = document.getElementById('lowSavingsMsg');
+  const highSavingsMsg = document.getElementById('highSavingsMsg');
+  const c5Context = document.getElementById('c5Context');
+
+  lowSavingsMsg.style.display = annualSavings < 200 ? 'block' : 'none';
+  highSavingsMsg.style.display = annualSavings > 50000 ? 'block' : 'none';
+  c5Context.style.display = tariff === 'C5' ? 'block' : 'none';
+
+  // Hero
+  document.getElementById('heroAmount').textContent = formatEur(Math.round(annualSavings));
+  document.getElementById('heroRange').textContent =
+    'Fourchette : ' + formatEur(Math.round(low)) + ' - ' + formatEur(Math.round(high)) + ' / an';
+
+  // Breakdown table
+  const tbody = document.querySelector('#breakdownTable tbody');
+  tbody.innerHTML = '';
+
+  const addRow = (label, value, cls) => {
+    const tr = document.createElement('tr');
+    if (cls) tr.className = cls;
+    tr.innerHTML = `<td>${label}</td><td>${value}</td>`;
+    tbody.appendChild(tr);
+  };
+
+  addRow('Puissance souscrite actuelle', P + (tariff === 'C2' ? ' kW' : ' kVA'));
+  addRow('Reduction estimee (' + Math.round(reduction * 100) + '%)', Math.round(puissanceReduite) + (tariff === 'C2' ? ' kW' : ' kVA'));
+  addRow('Nouvelle puissance cible', Math.round(newPuissance) + (tariff === 'C2' ? ' kW' : ' kVA'));
+
+  if (tariff === 'C5') {
+    addRow('Economie TURPE + CTA', formatEur(Math.round(puissanceReduite * RATES.turpe.C5.CU)) + ' / an');
+  } else {
+    const turpeSavings = puissanceReduite * turpeRate;
+    const fournitureSavings = annualSavings - turpeSavings - c4c5Bonus;
+    addRow('Economie TURPE + CTA', formatEur(Math.round(turpeSavings)) + ' / an');
+    if (fournitureSavings > 0) {
+      addRow('Economie prime fixe fourniture', formatEur(Math.round(fournitureSavings)) + ' / an');
+    }
+  }
+
+  if (c4c5Bonus > 0) {
+    addRow('Bonus passage C4 &rarr; C5', '+' + formatEur(c4c5Bonus) + ' / an');
+  }
+
+  addRow('Economie annuelle estimee', formatEur(Math.round(annualSavings)) + ' / an', 'total');
+
+  if (state.detectedTariff) {
+    addRow('Tarif auto-detecte', state.detectedTariff === 'C5' ? 'Bleu (C5)' : state.detectedTariff === 'C4' ? 'Jaune (C4)' : 'Vert HTA (C2)');
+  }
+
+  // Bar chart
+  renderBarChart(years);
+
+  // Battery sizing
+  document.getElementById('battPower').textContent = battPower;
+  document.getElementById('battCapacity').textContent = battCapacity;
+  document.getElementById('battCost').textContent = formatEurShort(battCost);
+
+  if (payback > 15) {
+    document.getElementById('battPayback').textContent = '> 15 ans';
+    document.getElementById('battPayback').style.fontSize = '16px';
+  } else {
+    document.getElementById('battPayback').textContent = payback.toFixed(1) + ' ans';
+    document.getElementById('battPayback').style.fontSize = '';
+  }
+
+  // Navigate
+  goStep(5);
+
+  // Animate hero number
+  animateNumber('heroAmount', 0, Math.round(annualSavings), 1200);
+}
+
+// ============================================
+// BAR CHART
+// ============================================
+function renderBarChart(years) {
+  const chart = document.getElementById('barChart');
+  chart.innerHTML = '';
+
+  const maxCumul = years[years.length - 1].cumul;
+
+  years.forEach((y, i) => {
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+
+    const annualPct = (y.annual / maxCumul) * 100;
+    const cumulPct = (y.cumul / maxCumul) * 100;
+
+    col.innerHTML = `
+      <div class="bar-val">${formatEurShort(Math.round(y.cumul))}</div>
+      <div class="bar-fill cumul" style="height:0%" data-target="${cumulPct}"></div>
+      <div class="bar-label">An ${y.year}</div>
+    `;
+    chart.appendChild(col);
+  });
+
+  // Animate bars after a short delay
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      chart.querySelectorAll('.bar-fill').forEach(bar => {
+        bar.style.height = bar.dataset.target + '%';
+      });
+    }, 100);
+  });
+}
+
+// ============================================
+// HELPERS
+// ============================================
+function formatEur(n) {
+  return n.toLocaleString('fr-FR') + ' \u20AC';
+}
+
+function formatEurShort(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace('.', ',') + ' M\u20AC';
+  if (n >= 1000) return (n / 1000).toFixed(0) + ' k\u20AC';
+  return n + ' \u20AC';
+}
+
+function animateNumber(elId, from, to, duration) {
+  const el = document.getElementById(elId);
+  const start = performance.now();
+  const diff = to - from;
+
+  function tick(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    // Ease out
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(from + diff * eased);
+    el.textContent = formatEur(current);
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function restart() {
+  // Reset state
+  state.currentStep = 0;
+  state.tariff = null;
+  state.powerMethod = null;
+  state.puissance = 0;
+  state.usageOption = 'CU';
+  state.profile = null;
+  state.simultaneity = 0.65;
+  state.estimatedFromEquipment = false;
+  state.detectedTariff = null;
+
+  // Reset UI
+  document.querySelectorAll('.card').forEach(c => {
+    c.classList.remove('selected');
+    c.setAttribute('aria-checked', 'false');
+  });
+  // Re-select default simultaneity card
+  const simCards = document.querySelectorAll('#step3b .cards:last-of-type .card');
+  if (simCards[1]) {
+    simCards[1].classList.add('selected');
+    simCards[1].setAttribute('aria-checked', 'true');
+  }
+
+  document.getElementById('puissanceInput').value = '';
+  document.getElementById('surfaceInput').value = '';
+  document.querySelectorAll('input[name="hvac"]')[0].checked = true;
+  document.querySelectorAll('input[name="usageOption"]')[0].checked = true;
+  EQUIPMENT.forEach(e => {
+    equipQty[e.id] = 0;
+    document.getElementById('qty_' + e.id).textContent = '0';
+  });
+  document.getElementById('estimatedPowerBox').style.display = 'none';
+
+  ['btnStep1Next', 'btnStep2Next', 'btnStep4Next'].forEach(id => {
+    document.getElementById(id).disabled = true;
+  });
+
+  goStep(0);
+}
+
+// ============================================
+// EMAIL CONFIGURATION
+// ============================================
+const CONTACT_EMAIL = 'nicolas.rolland@auchin.fr';
+
+// TODO [DEPLOIEMENT] : Remplacer par un vrai service d'envoi d'email.
+// Options recommandees :
+//   - EmailJS (emailjs.com) : 200 emails/mois gratuits, appel direct depuis le navigateur
+//   - Backend custom (Node.js + nodemailer, PHP mail(), etc.)
+//   - Formspree / SendGrid / Mailgun via API
+//
+// Pour EmailJS, remplacer les fonctions sendLeadNotification() et sendEstimationToVisitor()
+// par des appels emailjs.send(serviceId, templateId, params).
+//
+// Tant que EMAIL_SERVICE n'est pas configure, les fonctions utilisent mailto en fallback.
+const EMAIL_SERVICE = null; // Set to 'emailjs', 'api', etc. when ready
+
+// ============================================
+// 1. NOTIFICATION LEAD -> nicolas.rolland@auchin.fr (Step 0)
+// ============================================
+function sendLeadNotification() {
+  const data = {
+    nom: state.lead.nom,
+    email: state.lead.email,
+    tel: state.lead.tel,
+    entreprise: state.lead.entreprise,
+    timestamp: new Date().toISOString()
+  };
+
+  // TODO [DEPLOIEMENT] : Envoyer via API
+  // Ex: await emailjs.send('service_xxx', 'template_lead', data);
+  // Ex: await fetch(API_ENDPOINT + '/lead', { method: 'POST', body: JSON.stringify(data) });
+  if (EMAIL_SERVICE) {
+    submitToAPI('/lead', data);
+    return;
+  }
+
+  // Fallback : pas d'envoi automatique sans service email configure.
+  // Les donnees du lead sont conservees dans state.lead et seront
+  // transmises avec les resultats ou la demande de rappel.
+  console.log('[BESS Survey] Lead capture (envoi differe):', JSON.stringify(data));
+}
+
+// ============================================
+// 2. ENVOI RESULTATS -> email du visiteur (bouton "Recevoir mon estimation")
+// ============================================
+function sendEstimationToVisitor() {
+  const data = buildSubmissionData();
+  const resultsText = buildEmailBody();
+
+  // TODO [DEPLOIEMENT] : Envoyer via API a state.lead.email
+  // Ex: await emailjs.send('service_xxx', 'template_resultats', {
+  //   to_email: state.lead.email,
+  //   to_name: state.lead.nom,
+  //   results: resultsText
+  // });
+  if (EMAIL_SERVICE) {
+    submitToAPI('/send-estimation', { to: state.lead.email, ...data, body: resultsText });
+    showToast('Estimation envoyee a ' + state.lead.email + ' !');
+    return;
+  }
+
+  // Fallback mailto : pre-remplit un email a l'adresse du visiteur
+  // NOTE: ceci ouvre le client mail du visiteur, pas un envoi automatique.
+  // A remplacer par un vrai service au deploiement.
+  const subject = encodeURIComponent('Votre estimation BESS - VoltEdge');
+  const body = encodeURIComponent(resultsText);
+  window.open('mailto:' + state.lead.email + '?subject=' + subject + '&body=' + body, '_blank');
+  showToast('Estimation preparee — envoyez l\'email depuis votre messagerie.');
+}
+
+// ============================================
+// 3. DEMANDE DE RAPPEL -> nicolas.rolland@auchin.fr
+// ============================================
+function requestCallback() {
+  const data = buildSubmissionData();
+
+  if (EMAIL_SERVICE) {
+    submitToAPI('/callback', data);
+    showToast('Demande de rappel envoyee !');
+    return;
+  }
+
+  // Fallback mailto
+  const subject = encodeURIComponent('Demande de rappel BESS - ' + state.lead.entreprise);
+  const body = encodeURIComponent(
+    'Demande de rappel\n' +
+    '==================\n\n' +
+    'Nom : ' + state.lead.nom + '\n' +
+    'Email : ' + state.lead.email + '\n' +
+    'Telephone : ' + (state.lead.tel || 'Non renseigne') + '\n' +
+    'Entreprise : ' + state.lead.entreprise + '\n\n' +
+    'Estimation :\n' +
+    'Puissance souscrite : ' + state.puissance + (state.tariff === 'C2' ? ' kW' : ' kVA') + '\n' +
+    'Tarif : ' + state.tariff + ' ' + state.usageOption + '\n' +
+    'Economies estimees : ' + formatEur(Math.round(state.puissance * state.profile *
+      (state.tariff === 'C5' ? RATES.turpe.C5.CU : (RATES.consolidated[state.tariff]?.[state.usageOption] ?? 111)))) + '/an'
+  );
+  window.open('mailto:' + CONTACT_EMAIL + '?subject=' + subject + '&body=' + body, '_blank');
+  showToast('Demande de rappel preparee.');
+}
+
+// ============================================
+// DATA BUILDERS
+// ============================================
+function buildSubmissionData() {
+  return {
+    lead: state.lead,
+    tariff: state.tariff,
+    usageOption: state.usageOption,
+    puissance: state.puissance,
+    profile: state.profile,
+    estimatedFromEquipment: state.estimatedFromEquipment,
+    timestamp: new Date().toISOString()
+  };
+}
+
+function buildEmailBody() {
+  const P = state.puissance;
+  const reduction = state.profile;
+  const puissanceReduite = P * reduction;
+  const tariff = state.tariff;
+  const usage = state.usageOption;
+  const rate = tariff === 'C5' ? RATES.turpe.C5.CU : (RATES.consolidated[tariff]?.[usage] ?? 111);
+  let savings = puissanceReduite * rate;
+  if (tariff === 'C4' && (P - puissanceReduite) <= 36) savings += RATES.c4c5Bonus;
+
+  const battPower = Math.round(puissanceReduite);
+  const battCost = battPower * RATES.batteryCostPerKW;
+  const payback = savings > 0 ? (battCost / savings).toFixed(1) : '-';
+
+  return 'Estimation BESS - VoltEdge\n' +
+    '================================\n\n' +
+    'Bonjour ' + state.lead.nom + ',\n\n' +
+    'Voici le resume de votre estimation pour ' + state.lead.entreprise + ' :\n\n' +
+    'PARAMETRES\n' +
+    '----------\n' +
+    'Tarif : ' + tariff + ' ' + usage + '\n' +
+    'Puissance souscrite : ' + P + (tariff === 'C2' ? ' kW' : ' kVA') + '\n' +
+    'Profil de consommation : reduction de ' + Math.round(reduction * 100) + '%\n\n' +
+    'RESULTATS\n' +
+    '---------\n' +
+    'Economies annuelles estimees : ' + Math.round(savings) + ' EUR/an\n' +
+    'Fourchette : ' + Math.round(savings * 0.75) + ' - ' + Math.round(savings * 1.30) + ' EUR/an\n\n' +
+    'BATTERIE RECOMMANDEE\n' +
+    '--------------------\n' +
+    'Puissance : ' + battPower + ' kW\n' +
+    'Capacite : ' + (battPower * 2) + ' kWh\n' +
+    'Cout indicatif : ' + battCost + ' EUR\n' +
+    'Retour sur investissement : ' + payback + ' ans\n\n' +
+    '---\n' +
+    '* Estimation indicative basee sur les baremes TURPE 7 (aout 2025).\n' +
+    'Pour une analyse detaillee, contactez VoltEdge.\n';
+}
+
+// ============================================
+// API ENDPOINT (placeholder)
+// ============================================
+// TODO [DEPLOIEMENT] : Configurer l'URL de votre backend ou service email
+const API_ENDPOINT = null; // Ex: 'https://api.voltedge.fr/survey'
+
+async function submitToAPI(path, data) {
+  if (!API_ENDPOINT) return false;
+  try {
+    const resp = await fetch(API_ENDPOINT + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return resp.ok;
+  } catch (e) {
+    console.warn('API submission failed:', e);
+    return false;
+  }
+}
+</script>
+</body>
+</html>
